@@ -80,7 +80,7 @@ printf 'status\n' | nc -U /run/drake1804-ytplay/ctl.sock
 
 - [ ] A 10-minute 720p video: `dropped` under 1 % of `frames`, `top` shows ffmpeg under 200 % CPU. If not, set Quality to 480p in Settings and note it.
 - [ ] `nft list table inet mgu_uplink` shows uid 3920 accepted.
-- [ ] `/dev/shm/mgu-video-yt` is owned by root, and `ps` shows `ytplay` as uid 3920.
+- [ ] `/dev/shm/mgu-video-yt` is owned by root, and `ps` shows `ytplay` as uid 3920, plus one child still root, which only opens up the sound's lock files.
 
 ## 6. A test session with the app
 
@@ -153,7 +153,9 @@ ssh bmw rm -r /tmp/bube-audio-probe /tmp/probe.sh
 
 Sound is a best guess that has never been heard on a car, and it is off until you turn it on. [AUDIO_CARPLAY.md](AUDIO_CARPLAY.md) says what it assumes and what could go wrong. A failed CarPlay end restarts the head unit, so expect that this may happen, and never try this while driving.
 
-Connect the phone to CarPlay, select CarPlay as the source, pause the music, and turn the volume to where you normally listen. Then see what the unit offers:
+If player 0.1.7 or older has tried sound since the last restart, restart the head unit first. It may have left lock files that keep CarPlay out of its own devices.
+
+Connect the phone to CarPlay, select CarPlay as the source, pause the music, wait 20 seconds, and turn the volume to where you normally listen. Then see what the unit offers:
 
 ```bash
 ssh bmw /var/opt/drake1804-ytplay/current/ytaudio list
@@ -191,4 +193,4 @@ Now in the app. Open a video, and tap **Sound** on the player until it says `qui
 - [ ] Reverse gear and an incoming call: the video and its sound pause, and the car's own sounds are heard.
 - [ ] Turn the volume knob: note whether it changes the video's sound. If it does not, keep Sound at `quiet`, and say so.
 
-Heard nothing, or it says `No sound`, or the unit restarted: that is what this step is for. Gather the logs as at the top of this page, say which of these it was, and turn Sound off.
+Heard nothing, or it says `No sound`, or the unit restarted: that is what this step is for. [What the page says](AUDIO_CARPLAY.md#what-the-page-says) explains each message. Gather the logs as at the top of this page, say which of these it was, and turn Sound off.

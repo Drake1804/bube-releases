@@ -220,7 +220,9 @@ For a full test session, follow [CAR_TEST.md](CAR_TEST.md) step 6.
 
 Sound is a best guess that nobody has heard on a car. Do this parked. **The head unit may restart.** That is one of the things this step is meant to find out, and the logs survive it.
 
-Connect the phone to CarPlay, select CarPlay as the source, pause the music, and set the volume to where you normally listen.
+If player 0.1.7 or older has tried sound since the last restart, restart the head unit first. It may have left files that keep CarPlay out of its own sound devices.
+
+Connect the phone to CarPlay, select CarPlay as the source, pause the music, wait 20 seconds, and set the volume to where you normally listen.
 
 **See which sound devices the unit offers:**
 

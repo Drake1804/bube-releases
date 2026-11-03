@@ -1,16 +1,47 @@
 # Sound through the factory CarPlay path
 
-Can this project reach the speakers the way the factory CarPlay service does, with no iPhone playing the audio? Not known yet. The code is written on a best guess, and has never run on a car.
+Can this project reach the speakers the way the factory CarPlay service does, with no iPhone playing the audio? Not known yet. The code is written on a best guess, and no sound has been heard from it on a car.
 
-**Nothing below has been seen on a car by this project.** Every statement about the head unit is someone else's report, a document about other hardware, or an inference, and is marked as such. Sources are at the end, read on 2026-11-03.
+**Only [What a car has shown](#what-a-car-has-shown) comes from this project's car.** Every other statement about the head unit is someone else's report, a document about other hardware, or an inference, and is marked as such. Sources are at the end, read on 2026-11-03.
 
 **The plan's gate was moved.** It said audio goes into the app only after a demonstrated 10-second tone from a root shell to the speakers. On 2026-11-03 the owner chose to build first, on a best guess. So the code exists, but it stays off until someone turns it on, and the tone is now the first thing to try on the car. See [The tone first](#the-tone-first).
+
+## What a car has shown
+
+From the owner's player 0.1.6 log on 2026-11-03, with Sound on, the iPhone connected, and nothing heard.
+
+| Seen | So |
+|---|---|
+| ALSA opened `smartx:` devices named `CarPlayAlternate_CF_24_MONO`, `CarPlayMain_CF_48_STEREO`, `CarPlayMain_Mono_CF_24_MONO` and `AndroidAutoMedia_CF_48_STEREO` | The firmware has Intel's plugin, or one built from it, and each device carries its format in its name |
+| `CarPlayMain_CF_48_STEREO`: "Operation not permitted", as uid 3920 | Inferred, see below: a lock file 3920 could not open |
+| Both 24 kHz mono devices: "Channels count (2) not available", then "Unable to get period size" through `plug` | They cannot take 48 kHz stereo, and this plugin refuses the converter |
+| `AndroidAutoMedia_CF_48_STEREO` opened: 48 kHz stereo, buffer 3072 frames, period 1024 | uid 3920 can reach the plugin's shared memory, and this format works |
+| On that device: no sound heard. An attempt shortly before ended with "the sound device stopped answering", and in this one the position stopped moving after its first report | Inferred: nothing reads it, as Intel's documents say of an unconnected device (V2) |
+
+**Why "Operation not permitted".** In [Intel's public code][am-conn], `connectToSmartX` opens `/run/smartx/<device>_p.lock` with `O_CREAT | O_RDWR`, mode 0660, and on failure returns the -1 from `open()`. As an ALSA error, -1 is `-EPERM`. Every other way out of that function has its own code, and a device someone holds gives `-EBUSY`. The plugin never removes the file. So the likely story is this: some other program, probably `carplay`, made that lock file when the phone connected, and a usual umask of 022 made it 0640, which only its owner or root can open for writing. **Inferred from Intel's code, not seen.** The firmware's copy may differ. From player 0.1.8 the log prints each lock file's owner, mode and last user, which will settle it.
+
+**What this may mean for the phone.** The owner suspects the connected iPhone is why CarPlay's device refuses. That fits: the phone would be why the file exists. It also raises the next question, since `carplay` may keep the device open for as long as the phone is connected. If so, the next error will be "busy", and route A is closed with a phone connected, whatever the file's mode. Nobody knows yet.
+
+**A harm this found.** The earlier player made lock files of its own on the three devices it opened, and they stay until a restart. If `carplay` is not root and not in that file's group, CarPlay's spoken directions and Siri might fail, or worse (K4), until the head unit restarts. Inferred; nobody has seen it happen. From 0.1.8 `ytaudio` never opens those two mono devices by itself, makes any file it creates open to anyone, and removes it when the device closes.
+
+### What the page says
+
+From player 0.1.8. None of this has run on a car yet.
+
+| `No sound:` ... | Means | Next |
+|---|---|---|
+| `<device> is busy: in use by carplay ...` | CarPlay holds the device | Pause the music and wait 20 seconds. If it stays busy, try unplugging the phone once to see whether the message changes. Still busy with the phone connected means route B |
+| `<device>: nothing in the car reads it...` | It opened, and for 3 seconds took nothing | Select that source and pause its music. If it still says this, route A needs a route this project cannot make: route B |
+| `<device> stopped taking sound...` | It was read, then was not | Note what happened then: a call, a source change |
+| `<device>: its lock file is another program's...` | Root could not open the file up either, or the name was refused | Send the logs |
+| `On <device>`, and silence | It is being read, and that does not reach the speakers | Send the logs, and say which source was selected |
+| `On <device>`, and you hear it | Route A works | Keep it with `ytaudio save <device>`, or **I heard ... keep it** in YouTube Checks |
 
 ## In short
 
 The unit's AVB stack looks like Intel's IAS AVB Stream Handler, or something built from it. In Intel's public version, apps do not touch AVB: they write to an ordinary-looking ALSA device, `smartx:<name>` or `avb:<name>`, served by a userspace plugin over shared memory, and the handler turns that into AVB.
 
-If the car works that way, "AVB, not ALSA" (this project's working assumption so far) is wrong at the layer an app sees, and a `carplay` process may simply be an ALSA client. It would also explain why no public project reports a path: the kernel's `/proc/asound` would show nothing while music plays. **All of this is unverified.** The probe, `tools/audio-research/probe.sh`, settles it in about five minutes without changing anything. [docs/CAR_TEST.md, step 7](CAR_TEST.md) says how to run it.
+If the car works that way, "AVB, not ALSA" (this project's working assumption so far) is wrong at the layer an app sees, and a `carplay` process may simply be an ALSA client. It would also explain why no public project reports a path: the kernel's `/proc/asound` would show nothing while music plays. **That a device exists has now been seen; that sound reaches the car through one has not.** The probe, `tools/audio-research/probe.sh`, settles the rest in about five minutes without changing anything. [docs/CAR_TEST.md, step 7](CAR_TEST.md) says how to run it.
 
 Even if the device is there, the likely obstacle is routing: Intel's device only makes sound when something has connected it to the stream going out, and that call is not one this project can make yet.
 
@@ -20,12 +51,10 @@ Route A below. [native/ytplay/README.md](../native/ytplay/README.md#sound) has h
 
 | Unverified assumption | What the code does about it | If it is wrong |
 |---|---|---|
-| The firmware has the SmartX plugin, or a named ALSA device | Finds devices at run time from `/run/smartx`, `/dev/shm` and ALSA's configuration, instead of naming one | The page says there is no device; `ytaudio list` shows what is there |
-| The files are named as in Intel's public code (V5) | `smartx_<name>_p` becomes `smartx:<name>`; also `avb_` | Nothing is found from the files; ALSA's configuration may still list them |
-| A name says what a device carries | Opens only `carplay`, `media`, `entertain`, `music`, `stereo`, `main` by itself, and never names with `phone`, `call`, `pdc`, `gong`, `warn`, `mic` | It may pick a wrong one, or none. `ytaudio scan` and `ytaudio save` settle it by ear |
-| 48 kHz, 16-bit stereo is accepted (V2) | Tries that, then the same through ALSA's `plug` converter | The page says why it would not open |
-| uid 3920 may use it | Keeps the groups that own the plugin's files at the player's start | "Permission denied" on the page and in the log |
-| Something has connected the device onward (V2, V6) | **Nothing: this project cannot do that.** CarPlay selected and paused is the best chance | It opens and takes samples, and nothing is heard. No error will say so |
+| A name says what a device carries | Opens only `carplay`, `media`, `entertain`, `music` by itself, and never names with `phone`, `call`, `pdc`, `gong`, `warn`, `mic`, `mono`, `_24_`, `alternate` | It may pick a wrong one, or none. `ytaudio scan` and `ytaudio save` settle it by ear |
+| uid 3920 may use it once it can open the lock file | Keeps the groups that own the plugin's files at the player's start, and a root child opens up the lock file | The page says why |
+| The device is free while CarPlay is connected and paused | Nothing can make it so | `busy`, and the page names who holds it |
+| Something has connected the device onward (V2, V6) | **This project cannot do that.** CarPlay selected and paused is the best chance. It can tell when nothing reads the device: silence goes in first | `nothing in the car reads it` on the page. If something reads it and it goes nowhere audible, no error will say so |
 
 What it does to limit harm, none of it tried on a car:
 
@@ -33,6 +62,7 @@ What it does to limit harm, none of it tried on a car:
 - The device is held only while sound is written, and let go at a pause, a stall or a popup.
 - It runs in its own process with the crash handler told about it, so a crash in BMW's plugin should cost the sound and not the picture or the unit (K5). The video was tested to play on through a crash, a hang, a busy device and no device.
 - Logs reach the disk before each device is opened, so a restart of the unit leaves a trace.
+- A lock file it makes is open to anyone from the start, and removed when the device closes. The device is closed properly when sound stops: a kill comes only after 12 s.
 
 Risks that remain, and why to try this parked:
 
@@ -105,9 +135,9 @@ One person's binary analysis of GM Info 3.7, also Apollo Lake, but Android: `lib
 ## What could not be established
 
 - Which device, if any, `carplay` writes sound to. No public code or write-up says, and Cinemo's documentation is not public.
-- Whether the firmware has the SmartX plugin or `/run/smartx` at all.
 - What connects a source to the stream going to the RAM, and whether an outside process can ask it to.
-- Whether a device can be opened while CarPlay is connected but paused.
+- Whether a device can be opened while CarPlay is connected but paused. See [What a car has shown](#what-a-car-has-shown).
+- Who owns `CarPlayMain_CF_48_STEREO`'s lock file, and which uid `carplay` runs as.
 - Whether the catalog offers a way to play a file or URL, or to request an audio source. It is firmware-derived and not public, which is why the probe reads it on the car.
 - Whether the owner's build matches K2. Everything in K1 to K10 may differ on a 2019 X5.
 - Anything in DLT. Intel's code logs there, and the journal may be silent about audio. The probe does not touch DLT, as [one project warns][waze] that it is shared across the unit.
