@@ -203,7 +203,7 @@ Stay parked. Open the **YouTube** tile among the car's apps, search, and pick a 
 
 What to expect from this build:
 
-- Sign-in works from the QR code in the app, with nothing else to install. It lasts 7 days, then you scan again, and only accounts listed on the Google project can use it. Search and playback do not use it, but if YouTube refuses a video as a bot, a signed-in car also fetches the video cookies you set on the relay, and tries again.
+- Sign-in works from the QR code in the app, with nothing else to install. It lasts 7 days, then you scan again, and only accounts listed on the Google project can use it. Search and playback do not use it, but if YouTube refuses a video as a bot, a signed-in car also fetches the video cookies you set on the relay, and tries again. Those stay on the car when a sign-in expires, so video goes on until they stop working. Signing out removes them.
 - Titles in anything but Latin letters show `?`.
 - There is no sound until you turn it on in step 7.
 - Nothing stops video while the car is moving, so that stays your job.
