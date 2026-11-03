@@ -203,7 +203,7 @@ Stay parked. Open the **YouTube** tile among the car's apps, search, and pick a 
 
 What to expect from this build:
 
-- Sign-in says it is not set up, because the release holds no Google client. Search and playback do not need it.
+- Sign-in says it is not set up until you install the private **YouTube sign-in** package (`native/signin/README.md` in the source), because the public release holds no Google client. Search and playback do not use it.
 - Titles in anything but Latin letters show `?`.
 - There is no sound until you turn it on in step 7.
 - Nothing stops video while the car is moving, so that stays your job.

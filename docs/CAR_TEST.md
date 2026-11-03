@@ -91,7 +91,7 @@ Before: `mgu-deploy status --json`, `journalctl -b > before.log`, note `oapcontr
 - [ ] Controller: the dial moves the focus on the list, the push opens; on the player the dial seeks and the push pauses; BACK goes back and stops.
 - [ ] Screens: the picture sits right of the controls at the right aspect, and nothing covers it. Measure a button with a ruler: the designs assume 80 px is about 12 mm, on a 12.3-inch screen.
 - [ ] Focus: note where the HMI's focus starts on each page and after BACK. The app cannot move it, so it starts on the first thing, Search, not on the first video as the designs show.
-- [ ] Sign in, parked, with your client in `google-client.json` before packing (`native/ytplay/README.md`): the QR code opens on the phone, approving there brings "You're signed in", and Home, Subscriptions, Playlists and Liked fill in. Restart the head unit: still signed in. Sign out in Settings: the tabs go, and Google's account page no longer lists the app.
+- [ ] Sign in, parked, with the private **YouTube sign-in** package installed (`native/signin/README.md`): the QR code opens on the phone, approving there brings "You're signed in", and Home, Subscriptions, Playlists and Liked fill in. Restart the head unit: still signed in. Sign out in Settings: the tabs go, and Google's account page no longer lists the app.
 - [ ] `ls -la /var/opt/drake1804-ytplay/state`: the token file is 0600 and uid 3920's.
 - [ ] Interrupt: incoming call, reverse gear (the camera must take the screen), HMI popup, BACK, HOME. The video hides and comes back, the position kept.
 - [ ] Network loss: turn off the hotspot mid-play. The page says it is waiting, and playback resumes within 10 s of the hotspot returning.
