@@ -91,13 +91,14 @@ Before: `mgu-deploy status --json`, `journalctl -b > before.log`, note `oapcontr
 - [ ] Controller: the dial moves the focus on the list, the push opens; on the player the dial seeks and the push pauses; BACK goes back and stops.
 - [ ] Screens: the picture sits right of the controls at the right aspect, and nothing covers it. Measure a button with a ruler: the designs assume 80 px is about 12 mm, on a 12.3-inch screen.
 - [ ] Focus: note where the HMI's focus starts on each page and after BACK. The app cannot move it, so it starts on the first thing, Search, not on the first video as the designs show.
-- [ ] Sign in, parked, with the private **YouTube sign-in** package installed (`native/signin/README.md`): the QR code opens on the phone, approving there brings "You're signed in", and Home, Subscriptions, Playlists and Liked fill in. Restart the head unit: still signed in. Sign out in Settings: the tabs go, and Google's account page no longer lists the app.
+- [ ] Sign in, parked: the QR code opens on the phone, approving there brings "You're signed in", and Home, Subscriptions, Playlists and Liked fill in. Restart the head unit: still signed in. Sign out in Settings: the tabs go, and Google's account page no longer lists the app.
 - [ ] `ls -la /var/opt/drake1804-ytplay/state`: the token file is 0600 and uid 3920's.
 - [ ] Interrupt: incoming call, reverse gear (the camera must take the screen), HMI popup, BACK, HOME. The video hides and comes back, the position kept.
 - [ ] Network loss: turn off the hotspot mid-play. The page says it is waiting, and playback resumes within 10 s of the hotspot returning.
 - [ ] Crash injection: `kill -9` the player (recmgr restarts it, not the head unit); `kill -9` the app's node (MainApp restarts it, never reaching 5 restarts in 10 minutes); `kill -9 mgu-render` (the HMI stays up, the app reconnects).
 - [ ] Power: ignition off mid-play, back on after 2 minutes. The unit sleeps and wakes with the app closed and nothing in `journalctl -p err`.
 - [ ] Three cold starts in a row with the tool enabled: boot time within 5 s of stock (`systemd-analyze`).
+- [ ] Send logs online, with the relay deployed: **Turn on** in Settings shows an ID and a growing count of lines, and those lines arrive in Axiom under that ID, app and player both. Turn the hotspot off and play something: the row says it is waiting for internet. Turn it back on: what was written meanwhile arrives. Restart the unit and open the app: it is still on, and goes on from where it was. **Turn off**: `ps` shows no `logship.py`. While it runs, `top` shows it under 2 % of a core and video stays at 28 fps or more.
 - [ ] Remove both from the Store: `mgu-deploy status --json` clean, `nft` rules gone, `/dev/shm/mgu-video-yt` gone.
 
 After: diff `journalctl -b` against `before.log` for new `err` lines; `patch_mainapp.js check --json` unchanged.

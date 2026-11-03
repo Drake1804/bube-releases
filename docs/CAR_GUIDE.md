@@ -203,7 +203,7 @@ Stay parked. Open the **YouTube** tile among the car's apps, search, and pick a 
 
 What to expect from this build:
 
-- Sign-in says it is not set up until you install the private **YouTube sign-in** package (`native/signin/README.md` in the source), because the public release holds no Google client. Search and playback do not use it.
+- Sign-in works from the QR code in the app, with nothing else to install. It lasts 7 days, then you scan again, and only accounts listed on the Google project can use it. Search and playback do not use it.
 - Titles in anything but Latin letters show `?`.
 - There is no sound until you turn it on in step 7.
 - Nothing stops video while the car is moving, so that stays your job.
@@ -280,6 +280,8 @@ Do this whenever something goes wrong, as soon as you can. Replace the words in 
 ```bash
 ssh bmw sh /var/opt/drake1804-ytplay/current/collect-logs.sh "no sound at 10:40, the page said busy" > ~/bube-logs.tgz
 ```
+
+**Or send them from the car, with no laptop.** In the YouTube app, open Settings and press **Turn on** beside **Send logs online**. Write down the ID it shows, and say it along with what you saw. The app's and the player's logs then go online for 24 hours, and catch up when the car is next online, so a restart or a dead hotspot loses nothing. Press **Turn off** when you are done. This leaves out the journal, so if the head unit itself misbehaved, use the command above as well.
 
 **If the tool is not installed,** copy the collector over first:
 
