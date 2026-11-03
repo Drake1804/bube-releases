@@ -98,6 +98,7 @@ Before: `mgu-deploy status --json`, `journalctl -b > before.log`, note `oapcontr
 - [ ] Crash injection: `kill -9` the player (recmgr restarts it, not the head unit); `kill -9` the app's node (MainApp restarts it, never reaching 5 restarts in 10 minutes); `kill -9 mgu-render` (the HMI stays up, the app reconnects).
 - [ ] Power: ignition off mid-play, back on after 2 minutes. The unit sleeps and wakes with the app closed and nothing in `journalctl -p err`.
 - [ ] Three cold starts in a row with the tool enabled: boot time within 5 s of stock (`systemd-analyze`).
+- [ ] The player's groups: after a cold start, wait over 2 minutes, `kill -9` the player, then run `grep -E 'held the drop|kept group' /var/opt/drake1804-ytplay/log/ytplay.log`. The two starts list the same `kept group` numbers. If the cold start has fewer, gather the logs: `held the drop` says whether a client came before the sound plugin's files did.
 - [ ] Send logs online, with the relay deployed: **Turn on** in Settings shows an ID and a growing count of lines, and those lines arrive in Axiom under that ID, app and player both. Turn the hotspot off and play something: the row says it is waiting for internet. Turn it back on: what was written meanwhile arrives. Restart the unit and open the app: it is still on, and goes on from where it was. **Turn off**: `ps` shows no `logship.py`. While it runs, `top` shows it under 2 % of a core and video stays at 28 fps or more.
 - [ ] Remove both from the Store: `mgu-deploy status --json` clean, `nft` rules gone, `/dev/shm/mgu-video-yt` gone.
 

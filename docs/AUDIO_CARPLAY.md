@@ -24,6 +24,8 @@ From the owner's player 0.1.6 log on 2026-11-03, with Sound on, the iPhone conne
 
 **A harm this found.** The earlier player made lock files of its own on the three devices it opened, and they stay until a restart. If `carplay` is not root and not in that file's group, CarPlay's spoken directions and Siri might fail, or worse (K4), until the head unit restarts. Inferred; nobody has seen it happen. From 0.1.8 `ytaudio` never opens those two mono devices by itself, makes any file it creates open to anyone, and removes it when the device closes.
 
+**A group a cold boot lost.** Player 0.1.4's logs show it keeping groups 29, 916, 917 and 13015 when it started right after install, and losing 916 when it started early in a boot. A group not held when the player drops root is gone until its next start, so after a cold boot the drop now waits for the first client, or two minutes after boot. Which file has that group, whether sound needs it, and whether the wait is long enough are not known.
+
 ### What the page says
 
 From player 0.1.8. None of this has run on a car yet.
@@ -52,7 +54,7 @@ Route A below. [native/ytplay/README.md](../native/ytplay/README.md#sound) has h
 | Unverified assumption | What the code does about it | If it is wrong |
 |---|---|---|
 | A name says what a device carries | Opens only `carplay`, `media`, `entertain`, `music` by itself, and never names with `phone`, `call`, `pdc`, `gong`, `warn`, `mic`, `mono`, `_24_`, `alternate` | It may pick a wrong one, or none. `ytaudio scan` and `ytaudio save` settle it by ear |
-| uid 3920 may use it once it can open the lock file | Keeps the groups that own the plugin's files at the player's start, and a root child opens up the lock file | The page says why |
+| uid 3920 may use it once it can open the lock file | Keeps the groups that own the plugin's files when it drops root, which [waits a little after a cold boot](#what-a-car-has-shown), and a root child opens up the lock file | The page says why |
 | The device is free while CarPlay is connected and paused | Nothing can make it so | `busy`, and the page names who holds it |
 | Something has connected the device onward (V2, V6) | **This project cannot do that.** CarPlay selected and paused is the best chance. It can tell when nothing reads the device: silence goes in first | `nothing in the car reads it` on the page. If something reads it and it goes nowhere audible, no error will say so |
 
